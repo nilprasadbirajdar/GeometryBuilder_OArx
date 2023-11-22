@@ -157,6 +157,43 @@ static void rectangleUsingThreeVertices()
     pBlockTableRecord->close();
 }
 
+//Function for creating Rectangle using center, midpoint  and vertex in autocad
+static void rectangleUsingCenterMidPointAndVertex()
+{
+    // Get the current space block
+    AcDbDatabase* pDb = acdbHostApplicationServices()->workingDatabase();
+    AcDbBlockTableRecord* pBlockTableRecord;
+    Acad::ErrorStatus es = acdbOpenObject(pBlockTableRecord, pDb->currentSpaceId(), AcDb::kForWrite);
+    // Create 2 variables of the old point data type
+    ads_point pInCenter, pInMidPoint, pInVertex1;
+    // Prompt for the first point
+    AcDbPolyline* pPolyline = new AcDbPolyline();
+    if (RTNORM == acedGetPoint(NULL, _T("\nSpecify the center point: "), pInCenter))
+    {
+        AcGePoint2d pCenter(pInCenter[0], pInCenter[1]);
+        // Prompt for the second point
+        if (RTNORM == acedGetPoint(pInCenter, _T("\nSpecify mid point: "), pInMidPoint))
+        {
+            AcGePoint2d pMidPoint(pInMidPoint[0], pInMidPoint[1]);
+            if (RTNORM == acedGetPoint(pInMidPoint, _T("\nSpecify vertex: "), pInVertex1))
+            {
+                AcGePoint2d pVertex1(pInVertex1[0], pInVertex1[1]);
+                AcGePoint2d pVertex2((2 * pMidPoint[0]) - pInVertex1[0], (2 * pMidPoint[1]) - pInVertex1[1]);
+                AcGePoint2d pVertex3((2 * pCenter[0]) - pInVertex1[0], (2 * pCenter[1]) - pInVertex1[1]);
+                AcGePoint2d pVertex4((2 * pCenter[0]) - pVertex2[0], (2 * pCenter[1]) - pVertex2[1]);
+                createRectangle(pPolyline, pVertex1, pVertex2, pVertex3, pVertex4);
+                // Append the rectangle to modelspace
+                pBlockTableRecord->appendAcDbEntity(pPolyline);
+            }
+        }
+    }
+    pPolyline->close();
+
+    // Close the block table record and the Line object
+    pBlockTableRecord->close();
+
+}
+
 int acrxEntryPoint(AcRx::AppMsgCode Msg, void* pkt) {
     switch (Msg) {
     case AcRx::kInitAppMsg:
@@ -167,6 +204,8 @@ int acrxEntryPoint(AcRx::AppMsgCode Msg, void* pkt) {
         acedRegCmds->addCommand(L"AUCommands", _T("Rectangle(center,vertex)"), _T("Rectangle(center,vertex)"), ACRX_CMD_MODAL, rectangleUsingVertexAndCenter);
         //Command for making graphical object(rectangle Using Three Vertices)
         acedRegCmds->addCommand(L"AUCommands", _T("Rectangle(vertex1,vertex2,vertex3)"), _T("Rectangle(vertex1,vertex2,vertex3)"), ACRX_CMD_MODAL, rectangleUsingThreeVertices);
+        //Command for making graphical object(rectangle UsingCenter, Midpoint And Vertex)
+        acedRegCmds->addCommand(L"AUCommands", _T("Rectangle(center,midpoint,vertex)"), _T("Rectangle1(center,midpoint,vertex)"), ACRX_CMD_MODAL, rectangleUsingCenterMidPointAndVertex);        
         break;
     case AcRx::kUnloadAppMsg:
         acutPrintf(_T("\n Command Unloaded"));
