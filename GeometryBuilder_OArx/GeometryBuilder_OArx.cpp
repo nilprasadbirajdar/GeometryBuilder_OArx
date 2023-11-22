@@ -203,3 +203,4 @@ BOOL CGeometryBuilderOArxApp::InitInstance()
 
     return TRUE;
 }
+
