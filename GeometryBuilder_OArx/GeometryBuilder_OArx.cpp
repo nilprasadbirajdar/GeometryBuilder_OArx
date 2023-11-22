@@ -57,7 +57,7 @@ static void rectangleUsingVertexAndCenter()
     ads_point pInVertex1, pInCenter;
     // Prompt for the first point
     if (RTNORM == acedGetPoint(NULL, _T("\nSpecify the center point: "), pInCenter))
-    {  
+    {
         AcGePoint2d pCenter(pInCenter[0], pInCenter[1]);
         // Prompt for the second point
         double pXDistance, pYDistance;
@@ -121,6 +121,41 @@ static void rectangleUsingVertexAndCenter()
     }
 }
 
+//Function for creating Rectangle using Three vertices 
+static void rectangleUsingThreeVertices()
+{
+    // Get the current space block
+    AcDbDatabase* pDb = acdbHostApplicationServices()->workingDatabase();
+    AcDbBlockTableRecord* pBlockTableRecord;
+    Acad::ErrorStatus es = acdbOpenObject(pBlockTableRecord, pDb->currentSpaceId(), AcDb::kForWrite);
+    // Create 2 variables of the old point data type
+    ads_point pInVertex1, pInVertex2, pInVertex3;
+    // Prompt for the first point
+    AcDbPolyline* pPolyline = new AcDbPolyline();
+    if (RTNORM == acedGetPoint(NULL, _T("\nSpecify the first vertex: "), pInVertex1))
+    {
+        AcGePoint2d pVertex1(pInVertex1[0], pInVertex1[1]);
+        // Prompt for the second point
+        if (RTNORM == acedGetPoint(pInVertex1, _T("\nSpecify second vertex: "), pInVertex2))
+        {
+            AcGePoint2d pVertex2(pInVertex2[0], pInVertex2[1]);
+            if (RTNORM == acedGetPoint(pInVertex2, _T("\nSpecify third vertex: "), pInVertex3))
+            {
+
+                AcGePoint2d pVertex3(pInVertex3[0], pInVertex3[1]);
+                AcGePoint2d pCenter((pInVertex1[0] + pInVertex3[0]) / 2.0, (pInVertex1[1] + pInVertex3[1]) / 2.0);
+                AcGePoint2d pVertex4((2 * pCenter[0]) - pInVertex2[0], (2 * pCenter[1]) - pInVertex2[1]);
+                createRectangle(pPolyline, pVertex1, pVertex2, pVertex3, pVertex4);
+                // Append the rectangle to modelspace
+                pBlockTableRecord->appendAcDbEntity(pPolyline);
+            }
+        }
+    }
+    pPolyline->close();
+
+    // Close the block table record and the Line object
+    pBlockTableRecord->close();
+}
 
 int acrxEntryPoint(AcRx::AppMsgCode Msg, void* pkt) {
     switch (Msg) {
@@ -130,6 +165,8 @@ int acrxEntryPoint(AcRx::AppMsgCode Msg, void* pkt) {
         acutPrintf(L"\n Command Loaded");
         //Command for making graphical object(rectangle Using Center And Vertex)
         acedRegCmds->addCommand(L"AUCommands", _T("Rectangle(center,vertex)"), _T("Rectangle(center,vertex)"), ACRX_CMD_MODAL, rectangleUsingVertexAndCenter);
+        //Command for making graphical object(rectangle Using Three Vertices)
+        acedRegCmds->addCommand(L"AUCommands", _T("Rectangle(vertex1,vertex2,vertex3)"), _T("Rectangle(vertex1,vertex2,vertex3)"), ACRX_CMD_MODAL, rectangleUsingThreeVertices);
         break;
     case AcRx::kUnloadAppMsg:
         acutPrintf(_T("\n Command Unloaded"));
@@ -148,8 +185,8 @@ END_MESSAGE_MAP()
 
 CGeometryBuilderOArxApp::CGeometryBuilderOArxApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+    // TODO: add construction code here,
+    // Place all significant initialization in InitInstance
 }
 
 
@@ -162,7 +199,7 @@ CGeometryBuilderOArxApp theApp;
 
 BOOL CGeometryBuilderOArxApp::InitInstance()
 {
-	CWinApp::InitInstance();
+    CWinApp::InitInstance();
 
-	return TRUE;
+    return TRUE;
 }
