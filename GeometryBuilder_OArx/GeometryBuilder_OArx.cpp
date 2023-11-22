@@ -61,7 +61,7 @@ static void rectangleUsingVertexAndCenter()
         AcGePoint2d pCenter(pInCenter[0], pInCenter[1]);
         // Prompt for the second point
         double pXDistance, pYDistance;
-        if (RTNORM == acedGetPoint(pInCenter, _T("\nSpecify center point: "), pInVertex1))
+        if (RTNORM == acedGetPoint(pInCenter, _T("\nSpecify vertex point: "), pInVertex1))
         {
             AcGePoint2d pVertex1(pInVertex1[0], pInVertex1[1]);
             AcDbPolyline* pPolyline = new AcDbPolyline();
